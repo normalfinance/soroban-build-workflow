@@ -31,6 +31,10 @@ on:
         description: 'Required package'
         required: false
         type: string
+      required_package_b:
+        description: 'Required package (B)'
+        required: false
+        type: string
     secrets:
       release_token:
         description: 'Github token'
@@ -125,6 +129,14 @@ jobs:
           fi
 
           # Build any required packages first (if applicable)
+          if [ "${{ inputs.required_package_b }}" ]; then
+              # Build command arguments
+              REQUIRED_COMMAND_ARGS="--package ${{ inputs.required_package_b }} --out-dir ${OUTPUT} --meta source_repo=${{ github.repository }}"
+              
+              # Build the contract
+              stellar contract build $REQUIRED_COMMAND_ARGS
+          fi
+
           if [ "${{ inputs.required_package }}" ]; then
               # Build command arguments
               REQUIRED_COMMAND_ARGS="--package ${{ inputs.required_package }} --out-dir ${OUTPUT} --meta source_repo=${{ github.repository }}"
