@@ -27,12 +27,8 @@ on:
         description: 'Home domain'
         required: false
         type: string
-      required_package:
-        description: 'Required package'
-        required: false
-        type: string
-      required_package_b:
-        description: 'Required package (B)'
+      pre_build_script:
+        description: 'Script to run before building the contract'
         required: false
         type: string
     secrets:
@@ -113,6 +109,10 @@ jobs:
         with:
           version: '22.8.1'
       - run: |
+          if [ "${{ inputs.pre_build_script }}" ]; then
+            bash -c "${{ inputs.pre_build_script }}"
+          fi
+
           # Navigate to the working directory
           cd ${WORK_DIR}
 
@@ -126,23 +126,6 @@ jobs:
           fi
           if [ "${{ inputs.home_domain }}" ]; then
             COMMAND_ARGS="$COMMAND_ARGS --meta home_domain=${{ inputs.home_domain }}"
-          fi
-
-          # Build any required packages first (if applicable)
-          if [ "${{ inputs.required_package_b }}" ]; then
-              # Build command arguments
-              REQUIRED_COMMAND_ARGS="--package ${{ inputs.required_package_b }} --out-dir ${OUTPUT} --meta source_repo=${{ github.repository }}"
-              
-              # Build the contract
-              stellar contract build $REQUIRED_COMMAND_ARGS
-          fi
-
-          if [ "${{ inputs.required_package }}" ]; then
-              # Build command arguments
-              REQUIRED_COMMAND_ARGS="--package ${{ inputs.required_package }} --out-dir ${OUTPUT} --meta source_repo=${{ github.repository }}"
-              
-              # Build the contract
-              stellar contract build $REQUIRED_COMMAND_ARGS
           fi
 
           # Build the contract
